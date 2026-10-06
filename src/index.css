@@ -1,0 +1,141 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Surfaces — a near-black base with a faint blue cast, so accent colours
+     read as instrumentation rather than decoration. */
+  --color-base-950: #07080b;
+  --color-base-900: #0b0d12;
+  --color-base-850: #101319;
+  --color-base-800: #151922;
+  --color-base-750: #1b2029;
+  --color-base-700: #232936;
+  --color-base-600: #333b4a;
+
+  --color-edge: #1e232e;
+  --color-edge-strong: #2b3240;
+
+  --color-muted: #7c8698;
+  --color-subtle: #9aa4b6;
+  --color-ink: #e8ecf4;
+
+  /* Instrument accents */
+  --color-head: #fbbf24;
+  --color-head-dim: #b4830c;
+  --color-pending: #38bdf8;
+  --color-pending-dim: #0e7490;
+  --color-served: #34d399;
+  --color-served-dim: #047857;
+  --color-boundary: #fb7185;
+  --color-boundary-dim: #9f1239;
+  --color-wrap: #a78bfa;
+  --color-wrap-dim: #6d28d9;
+
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    Roboto, 'Helvetica Neue', sans-serif;
+
+  --radius-card: 14px;
+
+  --animate-head-glow: head-glow 2.4s ease-in-out infinite;
+  --animate-pulse-soft: pulse-soft 2.2s ease-in-out infinite;
+  --animate-sweep: sweep 2s linear infinite;
+}
+
+@keyframes head-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+@keyframes sweep {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--color-edge);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Keep anchored sections clear of the sticky header. */
+    scroll-padding-top: 5.5rem;
+  }
+
+  body {
+    background-color: var(--color-base-950);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--color-head) 30%, transparent);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-head);
+    outline-offset: 2px;
+  }
+
+  /* Numeric fields should not show spinners — they clutter a dense panel. */
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+
+  input[type='number'] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+}
+
+@utility num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+@utility card {
+  background-color: var(--color-base-900);
+  border: 1px solid var(--color-edge);
+  border-radius: var(--radius-card);
+}
+
+/* Faint technical grid used behind the disk visualisation. */
+@utility grid-fade {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--color-edge) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--color-edge) 40%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-base-700) transparent;
+}
