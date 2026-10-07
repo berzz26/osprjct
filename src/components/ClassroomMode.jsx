@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { ALGORITHM_INFO } from '../data/algorithmInfo.js'
 import { narrateStep, upcomingLabel, waitingRequests } from '../utils/explain.js'
 import { round } from '../utils/metrics.js'
+import DiskGraphView from './DiskGraphView.jsx'
 import DiskView from './DiskView.jsx'
 import Transport from './Transport.jsx'
 
@@ -20,6 +21,7 @@ export default function ClassroomMode({
   onSpeedPreset,
   onExit,
 }) {
+  const [viewMode, setViewMode] = useState('graph') // 'graph' | 'track'
   const info = ALGORITHM_INFO[algorithm]
   const movements = result?.movements ?? []
   const total = movements.length
@@ -45,13 +47,35 @@ export default function ClassroomMode({
         {/* top bar */}
         <div className="flex items-center justify-between gap-4">
           <p className="num text-xs uppercase tracking-[0.2em] text-muted">Presentation mode</p>
-          <button
-            type="button"
-            onClick={onExit}
-            className="num rounded-lg border border-edge-strong bg-base-850 px-4 py-2 text-sm font-medium text-subtle transition-colors hover:border-base-600 hover:text-ink"
-          >
-            Exit ✕
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="inline-flex rounded-lg border border-edge-strong bg-base-850 p-0.5">
+              <button
+                type="button"
+                onClick={() => setViewMode('graph')}
+                className={`num rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  viewMode === 'graph' ? 'bg-head text-black' : 'text-muted hover:text-ink'
+                }`}
+              >
+                📈 2D Trajectory
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('track')}
+                className={`num rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  viewMode === 'track' ? 'bg-head text-black' : 'text-muted hover:text-ink'
+                }`}
+              >
+                📏 1D Disk Track
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={onExit}
+              className="num rounded-lg border border-edge-strong bg-base-850 px-4 py-2 text-sm font-medium text-subtle transition-colors hover:border-base-600 hover:text-ink"
+            >
+              Exit ✕
+            </button>
+          </div>
         </div>
 
         {/* algorithm */}
@@ -60,9 +84,20 @@ export default function ClassroomMode({
         </h2>
         <p className="mt-2 text-center text-lg text-subtle">{info?.fullName}</p>
 
-        {/* disk, large */}
+        {/* disk visualizer */}
         <div className="card mt-8 p-5 sm:p-8">
-          <DiskView config={input} result={result} step={step} large />
+          {viewMode === 'graph' ? (
+            <DiskGraphView
+              config={input}
+              result={result}
+              step={step}
+              playback={playback}
+              onSeek={playback.seek}
+              large
+            />
+          ) : (
+            <DiskView config={input} result={result} step={step} large />
+          )}
         </div>
 
         {/* current position */}
@@ -146,6 +181,7 @@ export default function ClassroomMode({
             disabled={total === 0}
             speedPreset={speedPreset}
             onSpeedPreset={onSpeedPreset}
+            totalSteps={total}
           />
           <p className="num mt-3 text-center text-sm text-muted">
             Step {Math.min(step + (finished ? 0 : 1), Math.max(total, 1))} of {total}

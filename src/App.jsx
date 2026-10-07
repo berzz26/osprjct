@@ -4,6 +4,7 @@ import AlgoExplainer from './components/AlgoExplainer.jsx'
 import AlgoGrid from './components/AlgoGrid.jsx'
 import ClassroomMode from './components/ClassroomMode.jsx'
 import ComparePanel from './components/ComparePanel.jsx'
+import DiskGraphView from './components/DiskGraphView.jsx'
 import DiskView, { DiskKey } from './components/DiskView.jsx'
 import Footer from './components/Footer.jsx'
 import Header from './components/Header.jsx'
@@ -18,6 +19,7 @@ import { randomRequests, validateConfig } from './utils/validation.js'
 
 export default function App() {
   const [config, setConfig] = useState(DEFAULT_CONFIG)
+  const [viewMode, setViewMode] = useState('graph') // 'graph' | 'track' | 'dual'
   const [compareOpen, setCompareOpen] = useState(false)
   const [classroom, setClassroom] = useState(false)
   const [speedPreset, setSpeedPreset] = useState(2)
@@ -114,19 +116,103 @@ export default function App() {
 
           <div className="min-w-0 space-y-5">
             <section aria-label="Disk" className="card p-5 sm:p-6">
-              <h2 className="text-base font-semibold text-ink">Watch the disk head move</h2>
-              <p className="mt-1 text-sm text-subtle">
-                Requests are shown as dots. The yellow marker is the current head position.
-              </p>
+              {/* Header with Visual View Switcher */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-edge/60 pb-4">
+                <div>
+                  <h2 className="text-base font-semibold text-ink">
+                    {viewMode === 'graph'
+                      ? '2D Trajectory Graph'
+                      : viewMode === 'track'
+                        ? '1D Linear Track'
+                        : 'Combined Simulation View'}
+                  </h2>
+                  <p className="mt-0.5 text-xs text-subtle">
+                    {viewMode === 'graph'
+                      ? 'Time-series cylinder trajectory descending step-by-step'
+                      : viewMode === 'track'
+                        ? 'Linear horizontal track with glowing head'
+                        : 'Synchronized 1D track & 2D trajectory animation'}
+                  </p>
+                </div>
+
+                {/* View Mode Tabs */}
+                <div className="inline-flex rounded-xl border border-edge-strong bg-base-850 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('graph')}
+                    aria-pressed={viewMode === 'graph'}
+                    className={`num flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                      viewMode === 'graph'
+                        ? 'bg-head text-black shadow-sm'
+                        : 'text-muted hover:text-ink'
+                    }`}
+                    title="Textbook 2D Step-by-Step Graph (Image 2)"
+                  >
+                    <span>📈</span> 2D Graph
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('track')}
+                    aria-pressed={viewMode === 'track'}
+                    className={`num flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                      viewMode === 'track'
+                        ? 'bg-head text-black shadow-sm'
+                        : 'text-muted hover:text-ink'
+                    }`}
+                    title="1D Horizontal Disk Track (Image 1)"
+                  >
+                    <span>📏</span> 1D Track
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('dual')}
+                    aria-pressed={viewMode === 'dual'}
+                    className={`num flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                      viewMode === 'dual'
+                        ? 'bg-head text-black shadow-sm'
+                        : 'text-muted hover:text-ink'
+                    }`}
+                    title="Both 1D Track and 2D Graph views simultaneously"
+                  >
+                    <span>🔲</span> Dual View
+                  </button>
+                </div>
+              </div>
 
               {!validation.valid ? (
                 <InvalidNotice validation={validation} />
               ) : (
-                <div className="mt-6">
-                  <DiskView config={input} result={result} step={playback.step} />
-                  <div className="mt-5">
-                    <DiskKey />
-                  </div>
+                <div className="mt-5 space-y-6">
+                  {/* 1D Track Bar View */}
+                  {(viewMode === 'track' || viewMode === 'dual') && (
+                    <div className="rounded-xl border border-edge/80 bg-base-950/60 p-4">
+                      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                        Horizontal Disk Track
+                      </p>
+                      <DiskView config={input} result={result} step={playback.step} />
+                      <div className="mt-4">
+                        <DiskKey />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 2D Trajectory Graph View */}
+                  {(viewMode === 'graph' || viewMode === 'dual') && (
+                    <div>
+                      {viewMode === 'dual' && (
+                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                          2D Step-by-Step Trajectory
+                        </p>
+                      )}
+                      <DiskGraphView
+                        config={input}
+                        result={result}
+                        step={playback.step}
+                        playback={playback}
+                        onSeek={playback.seek}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </section>
@@ -145,6 +231,7 @@ export default function App() {
                     disabled={!result || result.movements.length === 0}
                     speedPreset={speedPreset}
                     onSpeedPreset={setSpeedPreset}
+                    totalSteps={result?.movements.length ?? 0}
                   />
                 </div>
                 <RequestOrder result={result} step={playback.step} onJump={playback.seek} />

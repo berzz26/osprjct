@@ -1,9 +1,10 @@
 import { ALGORITHM_IDS, ALGORITHM_INFO } from '../data/algorithmInfo.js'
 import { isDirectional } from '../algorithms/index.js'
+import { PRESETS } from '../utils/presets.js'
 import HelpTip from './HelpTip.jsx'
 
 /**
- * The Setup card: disk size, starting position, requests, direction, algorithm,
+ * The Setup card: presets, disk size, starting position, requests, direction, algorithm,
  * Run + Random. Deliberately plain — no metrics, no jargon.
  */
 export default function SetupPanel({ config, validation, onChange, onRun, onRandom }) {
@@ -12,10 +13,36 @@ export default function SetupPanel({ config, validation, onChange, onRun, onRand
 
   return (
     <section aria-label="Setup" className="card p-5 sm:p-6">
-      <h2 className="text-base font-semibold text-ink">Setup</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-semibold text-ink">Setup</h2>
+        <span className="text-xs text-muted">Instant live preview</span>
+      </div>
       <p className="mt-1 text-sm leading-relaxed text-subtle">
-        Change anything — the disk and the result update instantly.
+        Configure parameters or choose a standard textbook preset below.
       </p>
+
+      {/* Preset Quick Loader */}
+      <div className="mt-4 rounded-xl border border-edge-strong bg-base-850 p-2.5">
+        <label htmlFor="preset-select" className="block text-xs font-semibold uppercase tracking-wider text-muted">
+          Load Example Preset
+        </label>
+        <select
+          id="preset-select"
+          defaultValue=""
+          onChange={(e) => {
+            const chosen = PRESETS.find((p) => p.name === e.target.value)
+            if (chosen) onChange(chosen.config)
+          }}
+          className="num mt-1.5 w-full rounded-lg border border-edge bg-base-900 px-2.5 py-2 text-xs text-ink transition-colors hover:border-base-600 focus:border-head/60 focus:outline-none"
+        >
+          <option value="" disabled>Select a textbook preset...</option>
+          {PRESETS.map((p) => (
+            <option key={p.name} value={p.name}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div className="mt-5 space-y-5">
         {/* disk size */}
